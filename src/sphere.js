@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { Vector3 } from 'three'
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls"
 
 
@@ -53,11 +52,10 @@ function init(imageData, data){
     var canvas3D = document.getElementById("canvas3D");
     const renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvas3D});
 
-    //Getting the image ready
+    //Getting the camera
     const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 500);
     camera.position.set(0, 0, 50);
     camera.lookAt( 0, 0, 0 );
-
     const controls = new OrbitControls( camera, renderer.domElement );
 
     //Renderer properties
@@ -71,13 +69,11 @@ function init(imageData, data){
 
 
     var pointMaterial = new THREE.MeshBasicMaterial({color: "#00fbff"});
-    var pointMaterial2 = new THREE.MeshBasicMaterial({color: "#fc03c2"});
 
 
 
     //Geometry containing all points
     const kindaGeometry = new THREE.Geometry();
-    const kindaGeometry2 = new THREE.Geometry();
 
 
     //Ambient and helpers
@@ -87,9 +83,6 @@ function init(imageData, data){
     scene.add( axesHelper );
 
     //Using spherical coordinates
-    var x = 0
-    var y = 0
-    var z = 0
     var r = 15
     var vector = new THREE.Vector3()
     const RADIAN = 0.0174533
@@ -123,8 +116,11 @@ function init(imageData, data){
     const cortMat = new THREE.MeshBasicMaterial({color: "#000000"});
     const cort = new THREE.SphereGeometry(r-0.1,12,10)
     const meshCort = new THREE.Mesh(cort,cortMat)
+    
+    
     scene.add(meshCort)
     scene.add(fullGeometry)
+   
     animate();
 }
 
