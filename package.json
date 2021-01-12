@@ -1,0 +1,29 @@
+{
+  "name": "issphere",
+  "version": "1.0.0",
+  "description": "issphere",
+  "main": "sphere.js",
+  "scripts": {
+    "start": "parcel index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomasellis/issphere.git"
+  },
+  "keywords": [
+    "iss",
+    "sphere"
+  ],
+  "author": "Tomas Ellis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tomasellis/issphere/issues"
+  },
+  "homepage": "https://github.com/tomasellis/issphere#readme",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4"
+  },
+  "dependencies": {
+    "three": "^0.124.0"
+  }
+}
