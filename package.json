@@ -24,6 +24,9 @@
     "parcel-bundler": "^1.12.4"
   },
   "dependencies": {
+    "@turf/boolean-point-in-polygon": "^6.2.0",
+    "@turf/helpers": "^6.2.0",
+    "@turf/turf": "^6.2.0",
     "three": "^0.124.0"
   }
 }
