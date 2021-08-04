@@ -1,37 +1,37 @@
-import * as THREE from 'three'
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls"
-import  booleanPointInPolygon from '@turf/boolean-point-in-polygon'
-import { Vector3 } from 'three'
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import { Vector3 } from "three";
+import axios from "axios";
 //import * as helpers from '@turf/helpers'
+require("babel-polyfill");
+const geoJSON = require("../assets/geoJSON1.json");
+const { point, geometry } = require("@turf/helpers");
+let issLongitude, issLatitude;
 
-const geoJSON = require('../assets/geoJSON1.json')
-const { point, geometry } = require('@turf/helpers')
+var img = new Image();
+img.onload = () => onImageLoaded(img);
 
+var m = require("../assets/hackyCanvas.png");
+img.src = m;
 
-
-var img = new Image()
-img.onload = () => onImageLoaded(img)
-
-var m = require('../assets/map5.png')
-img.src = m
-
-const PI_4 = Math.PI/4
-const RAD2DEG = 180/Math.PI
-const PI_2 = Math.PI/2
+const PI_4 = Math.PI / 4;
+const RAD2DEG = 180 / Math.PI;
+const PI_2 = Math.PI / 2;
 
 // var x = Math.floor((phi/(2 * Math.PI)) * imageData.width)
-    
-    // var y = Math.floor((theta/Math.PI) * imageData.height)
 
-    // var pxCoords = [x ,y + ' / theta: ' + theta]
-    // console.log(pxCoords)
+// var y = Math.floor((theta/Math.PI) * imageData.height)
+
+// var pxCoords = [x ,y + ' / theta: ' + theta]
+// console.log(pxCoords)
 
 // function checkPixel( theta, phi, imageData, data){
-    
+
 //     const mapHeight = imageData.height
 //     const mapWidth = imageData.width
 //     var x = Math.floor((phi/(2 * Math.PI)) * imageData.width)
-    
+
 //     var y = Math.floor((theta/Math.PI) * imageData.height)
 
 //     var pxCoords = [x ,y + ' / theta: ' + theta]
@@ -39,7 +39,6 @@ const PI_2 = Math.PI/2
 
 //     console.log('x', Math.floor(x), 'y', Math.floor(y))
 //     var pxPos = Math.floor(x) * (imageData.width * 4) + Math.floor(y) * 4;
-    
 
 //     if (data[pxPos+] >= (255/2)){
 //         return true
@@ -49,178 +48,200 @@ const PI_2 = Math.PI/2
 
 // }
 
-
-
-
-function checkPoly (phi, theta, geoJSON){
-    var latitude = (phi - PI_2) * RAD2DEG
-    var longitude = -(theta - Math.PI) * RAD2DEG
-    let pnt = point([longitude, latitude])
-    for (var i = 0; i < geoJSON.features.length; i++) {
-        var poly = geoJSON.features[i].geometry
-        if (booleanPointInPolygon(pnt, poly)) {
-            return true;
-        }
+function checkPoly(phi, theta, geoJSON) {
+  var latitude = (phi - PI_2) * RAD2DEG;
+  var longitude = -(theta - Math.PI) * RAD2DEG;
+  let pnt = point([longitude, latitude]);
+  for (var i = 0; i < geoJSON.features.length; i++) {
+    var poly = geoJSON.features[i].geometry;
+    if (booleanPointInPolygon(pnt, poly)) {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
 
-
-function onImageLoaded(img){
-        const canvas = document.getElementById("nombreAdecuado")
-        const ctx = canvas.getContext("2d")
-        canvas.width = img.width
-        canvas.height = img.height
-        ctx.drawImage(img,0,0)
-        const imageData = ctx.getImageData(0,0,img.width,img.height)
-        const data = imageData.data
-        init(imageData, data)
-    
+function onImageLoaded(img) {
+  const canvas = document.getElementById("nombreAdecuado");
+  const ctx = canvas.getContext("2d");
+  canvas.width = img.width;
+  canvas.height = img.height;
+  ctx.drawImage(img, 0, 0);
+  const imageData = ctx.getImageData(0, 0, img.width, img.height);
+  const data = imageData.data;
+  init(imageData, data);
 }
 
-function init(imageData, data){
-    //Define my scene, camera and renderer
-    const scene = new THREE.Scene()
-    scene.background = new THREE.Color( 0x000000 );
+function init(imageData, data) {
+  const getFirstPos = async () => {
+    let res = await axios.get("http://api.open-notify.org/iss-now.json");
+    issLongitude = res.data.iss_position.longitude;
+    issLatitude = res.data.iss_position.latitude;
+  };
 
-    //Link HTML canvas and pass it to renderer
-    var canvas3D = document.getElementById("canvas3D");
-    const renderer = new THREE.WebGLRenderer({antialias: true, canvas: canvas3D});
+  getFirstPos();
+  //Define my scene, camera and renderer
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x000000);
 
-    //Getting the camera
-    const camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 500);
-    camera.position.set(0, 0, 50);
-    camera.lookAt( 0, 0, 0 );
-    const controls = new OrbitControls( camera, renderer.domElement );
+  //Link HTML canvas and pass it to renderer
+  var canvas3D = document.getElementById("canvas3D");
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    canvas: canvas3D,
+  });
 
-    //Renderer properties
-    renderer.setSize( window.innerWidth, window.innerHeight);
-    document.body.appendChild( renderer.domElement );
+  //Getting the camera
+  const camera = new THREE.PerspectiveCamera(
+    70,
+    window.innerWidth / window.innerHeight,
+    1,
+    500
+  );
+  camera.position.set(0, 0, 50);
+  camera.lookAt(0, 0, 0);
+  const controls = new OrbitControls(camera, renderer.domElement);
 
-    var line = null
+  //Renderer properties
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
 
-    function insertPoint(vector){
-        pointGeometry.translate(vector.x, vector.y, vector.z)
-        generalGeometry.merge(pointGeometry)
-        pointGeometry.translate(-vector.x, -vector.y, -vector.z)
-    
-       
+  var line = null;
+
+  function insertPoint(vector) {
+    pointGeometry.translate(vector.x, vector.y, vector.z);
+    generalGeometry.merge(pointGeometry);
+    pointGeometry.translate(-vector.x, -vector.y, -vector.z);
+  }
+  //<!--Up is renderer, down is sphere-->
+
+  const generalMaterial = new THREE.MeshBasicMaterial({ color: "#00fbff" });
+  const specificMaterial = new THREE.MeshBasicMaterial({ color: "#ff053f" });
+
+  //points
+  const pointGeometry = new THREE.SphereGeometry(0.03, 1, 1);
+  //points1
+  const pointGeometry1 = new THREE.SphereGeometry(0.03, 1, 1);
+
+  //Geometry containing all general points
+  const generalGeometry = new THREE.Geometry();
+  //Geometry containing specific points
+  const specificGeometry = new THREE.Geometry();
+
+  //Ambient and helpers
+  const light = new THREE.AmbientLight(0xffffff); // soft white light
+  scene.add(light);
+  const axesHelper = new THREE.AxesHelper(25);
+  scene.add(axesHelper);
+
+  //Using spherical coordinates
+  var r = 15;
+  var vector = new THREE.Vector3();
+  const DEGREE = 0.0174533 / 1;
+
+  //Phi is up-down
+  //Theta is side to side
+  for (var phi = 0; phi <= Math.PI; phi += DEGREE) {
+    for (var theta = 0; theta <= 2 * Math.PI; theta += DEGREE) {
+      vector.setFromSphericalCoords(r, phi, theta);
+      if (checkPoly(phi, theta, geoJSON)) {
+        insertPoint(vector);
+      }
     }
-    //<!--Up is renderer, down is sphere-->
-    
+  }
 
-    const generalMaterial = new THREE.MeshBasicMaterial({color: "#00fbff"});
-    const specificMaterial = new THREE.MeshBasicMaterial({color: "#ff053f"})
+  //Center on location
+  var locLatitude = -34.6020889;
+  var locLongitude = -58.9521294;
+  theta = -locLongitude / RAD2DEG + Math.PI;
+  phi = locLatitude / RAD2DEG + PI_2;
+  vector.setFromSphericalCoords(r, phi, theta);
 
-    //points
-    const pointGeometry = new THREE.SphereGeometry(0.03, 1, 1)
-    //points1
-    const pointGeometry1 = new THREE.SphereGeometry(0.03, 1, 1)
+  //Making line from 0 to vector
+  const points2 = [];
+  points2.push(new THREE.Vector3(0, 0, 0));
+  vector = new THREE.Vector3(vector.x, vector.y, vector.z).setLength(30);
+  points2.push(new THREE.Vector3(vector.x, vector.y, vector.z));
+  const line2Geometry = new THREE.BufferGeometry().setFromPoints(points2);
+  const line2Material = new THREE.LineBasicMaterial({ color: 0xcc33cc });
+  const line2 = new THREE.Line(line2Geometry, line2Material);
 
-    //Geometry containing all general points
-    const generalGeometry = new THREE.Geometry()
-    //Geometry containing specific points
-    const specificGeometry = new THREE.Geometry()
+  locLatitude = 0;
+  locLongitude = 0;
+  theta = -locLongitude / RAD2DEG + Math.PI;
+  phi = locLatitude / RAD2DEG + PI_2;
+  vector.setFromSphericalCoords(r, phi, theta);
 
-    //Ambient and helpers
-    const light = new THREE.AmbientLight( 0xffffff ); // soft white light
-    scene.add( light );
-    const axesHelper = new THREE.AxesHelper( 25 );
-    scene.add( axesHelper );
+  let points3 = [];
+  points3.push(new THREE.Vector3(0, 0, 0));
+  vector = new THREE.Vector3(vector.x, vector.y, vector.z).setLength(30);
+  points3.push(new THREE.Vector3(vector.x, vector.y, vector.z));
+  const line3Geometry = new THREE.BufferGeometry().setFromPoints(points3);
+  const line3Material = new THREE.LineBasicMaterial({ color: 0x65ff54 });
+  const line3 = new THREE.Line(line3Geometry, line3Material);
+  scene.add(line2, line3);
 
-    //Using spherical coordinates
-    var r = 15
-    var vector = new THREE.Vector3()
-    const DEGREE = 0.0174533/2
-    
-    //Phi is up-down
-    //Theta is side to side
-    for (var phi = 0; phi <= Math.PI; phi += DEGREE) {
-        for (var theta = 0; theta <= 2 * Math.PI; theta += DEGREE) {
-            vector.setFromSphericalCoords(r, phi, theta)
-            if (checkPoly(phi, theta, geoJSON)) {
-                insertPoint(vector)
-            }
-        }
-    }
+  //ISS DOT
+  const issGeometry = new THREE.SphereGeometry(1);
+  const issMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  const issSphere = new THREE.Mesh(issGeometry, issMaterial);
+  scene.add(issSphere);
 
-    //Center on location
-    var locLatitude = -38.7183
-    var locLongitude = -62.2663
-    theta = -locLongitude/RAD2DEG + Math.PI 
-    phi = locLatitude/RAD2DEG + PI_2 
-    vector.setFromSphericalCoords(r, phi, theta)
-    //Making line from 0 to vector
-    const points2 = []
-    points2.push( new THREE.Vector3( 0, 0, 0 ) );
-    vector = new THREE.Vector3(vector.x, vector.y, vector.z).setLength(30)
-    points2.push( new THREE.Vector3( vector.x, vector.y, vector.z ) );
-    const line2Geometry = new THREE.BufferGeometry().setFromPoints(points2)
-    const line2Material = new THREE.LineBasicMaterial({color: 0x65ff54})
-    const line2 = new THREE.Line(line2Geometry, line2Material)
-    
-    locLatitude = 0
-    locLongitude = 0
-    theta = -locLongitude/RAD2DEG + Math.PI 
-    phi = locLatitude/RAD2DEG + PI_2 
-    vector.setFromSphericalCoords(r, phi, theta)
+  async function updatePositions(issLongitude, issLatitude) {
+    /*
+    var locLatitude = -34.6020889;
+    var locLongitude = -58.9521294;
+    theta = -locLongitude / RAD2DEG + Math.PI;
+    phi = locLatitude / RAD2DEG + PI_2;
+    vector.setFromSphericalCoords(r, phi, theta);
+    */
+    let issTheta = (issLongitude - 180) / RAD2DEG + Math.PI;
+    let issPhi = -issLatitude / RAD2DEG + PI_4;
+    let issVector = new THREE.Vector3();
 
-    const points3 = []
-    points3.push( new THREE.Vector3( 0, 0, 0 ) );
-    vector = new THREE.Vector3(vector.x, vector.y, vector.z).setLength(30)
-    points3.push( new THREE.Vector3( vector.x, vector.y, vector.z ) );
-    const line3Geometry = new THREE.BufferGeometry().setFromPoints(points3)
-    const line3Material = new THREE.LineBasicMaterial({color: 0x65ff54})
-    const line3 = new THREE.Line(line3Geometry, line3Material)
-    scene.add(line2, line3)
+    issVector.setFromSphericalCoords(20, issPhi, issTheta);
+    issSphere.position.set(issVector.x, issVector.y, issVector.z);
+    console.log("phi", issPhi, "theta", issTheta);
+  }
 
-    
+  const specificMesh = new THREE.Mesh(specificGeometry, specificMaterial);
+  const generalMesh = new THREE.Mesh(generalGeometry, generalMaterial);
+  //Rotation fix
+  generalMesh.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), 90);
+  specificMesh.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), 90);
+  generalMesh.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 135.1);
+  specificMesh.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 135.1);
 
+  line3.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), 90);
+  line3.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 135.1);
+  line2.rotateOnWorldAxis(new THREE.Vector3(0, 1, 0), 90);
+  line2.rotateOnWorldAxis(new THREE.Vector3(0, 0, 1), 135.1);
+  //Cortex
+  const cortMat = new THREE.MeshBasicMaterial({ color: "#000000" });
+  const cort = new THREE.SphereGeometry(r - 0.01, 12, 10);
+  const meshCort = new THREE.Mesh(cort, cortMat);
 
+  scene.add(line);
+  scene.add(meshCort);
+  scene.add(generalMesh);
+  scene.add(specificMesh);
 
-    function animate() {
-        requestAnimationFrame( animate );
-        controls.update()
-        renderer.render( scene, camera );
-    }
+  setInterval(async function () {
+    console.log("running post");
+    let res = await axios.get("http://api.open-notify.org/iss-now.json");
+    issLongitude = res.data.iss_position.longitude;
+    issLatitude = res.data.iss_position.latitude;
+    console.log("got long", issLongitude, "got Lat", issLatitude);
+  }, 5000);
 
-    const specificMesh = new THREE.Mesh(specificGeometry, specificMaterial)
-    const generalMesh = new THREE.Mesh(generalGeometry, generalMaterial)
-    //Rotation fix
-    generalMesh.rotateOnWorldAxis(new THREE.Vector3(0,1,0),90)
-    specificMesh.rotateOnWorldAxis(new THREE.Vector3(0,1,0),90)
-    generalMesh.rotateOnWorldAxis(new THREE.Vector3(0,0,1),135.1)
-    specificMesh.rotateOnWorldAxis(new THREE.Vector3(0,0,1),135.1)
-    
-    line3.rotateOnWorldAxis(new THREE.Vector3(0,1,0),90)
-    line3.rotateOnWorldAxis(new THREE.Vector3(0,0,1),135.1)
-    line2.rotateOnWorldAxis(new THREE.Vector3(0,1,0),90)
-    line2.rotateOnWorldAxis(new THREE.Vector3(0,0,1),135.1)
-    //Cortex
-    const cortMat = new THREE.MeshBasicMaterial({color: "#000000"});
-    const cort = new THREE.SphereGeometry(r-0.01,12,10)
-    const meshCort = new THREE.Mesh(cort,cortMat)
-    
-    
-    scene.add(line)
-    scene.add(meshCort)
-    scene.add(generalMesh)
-    scene.add(specificMesh)
-    animate();
+  function animate() {
+    requestAnimationFrame(animate);
+    updatePositions(issLongitude, issLatitude);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // //Circle generator
 
@@ -235,8 +256,6 @@ function init(imageData, data){
 //     const circle = new THREE.Line( circleGeometry, circleMaterial );
 //     return circle
 // }
-
-
 
 // var img = new Image();
 // img.crossOrigin = 'anonymous';
